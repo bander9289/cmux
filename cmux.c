@@ -50,13 +50,13 @@
 #endif
 
 /* serial port of the modem */
-#define SERIAL_PORT	"/dev/ttyS1"
+#define SERIAL_PORT	"/dev/ttymxc5"
 
 /* line speed */
-#define LINE_SPEED	B115200
+#define LINE_SPEED	B38400
 
 /* maximum transfert unit (MTU), value in bytes */
-#define MTU	512
+#define MTU	64
 
 /**
 * whether or not to create virtual TTYs for the multiplex
@@ -294,7 +294,7 @@ int main(void) {
 	tio.c_iflag = 0;
 	tio.c_oflag = 0;
 	tio.c_cflag = CS8 | CREAD | CLOCAL;
-	tio.c_cflag |= CRTSCTS;
+//	tio.c_cflag |= CRTSCTS;
 	tio.c_lflag = 0;
 	tio.c_cc[VMIN] = 1;
 	tio.c_cc[VTIME] = 0;
@@ -313,15 +313,15 @@ int main(void) {
 	*	to fit your modem needs.
 	*	The following matches Quectel M95.
 	*/
-	if (send_at_command(serial_fd, "AT+IFC=2,2\r") == -1)
-		errx(EXIT_FAILURE, "AT+IFC=2,2: bad response");	
+//	if (send_at_command(serial_fd, "AT+IFC=2,2\r") == -1)
+//		errx(EXIT_FAILURE, "AT+IFC=2,2: bad response");	
 	if (send_at_command(serial_fd, "AT+GMM\r") == -1)
 		warnx("AT+GMM: bad response");
 	if (send_at_command(serial_fd, "AT\r") == -1)
 		warnx("AT: bad response");
-	if (send_at_command(serial_fd, "AT+IPR=115200&w\r") == -1)
-		errx(EXIT_FAILURE, "AT+IPR=115200&w: bad response");
-	sprintf(atcommand, "AT+CMUX=0,0,5,%d,10,3,30,10,2\r", MTU);
+	if (send_at_command(serial_fd, "AT+IPR=38400\r") == -1)
+		errx(EXIT_FAILURE, "AT+IPR=38400: bad response");
+	sprintf(atcommand, "AT+CMUX=0,0,3,%d,10,3,30,10,2\r", MTU);
 	if (send_at_command(serial_fd, atcommand) == -1)
 		errx(EXIT_FAILURE, "Cannot enable modem CMUX");
 
@@ -336,7 +336,7 @@ int main(void) {
 
 	/* set and write new attributes */
 	gsm.initiator = 1;
-	gsm.encapsulation = 0;
+	gsm.encapsulation = 0; /* 0 or 1, basic/advanced */
 	gsm.mru = MTU;
 	gsm.mtu = MTU;
 	gsm.t1 = 10;
